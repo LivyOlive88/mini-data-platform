@@ -42,7 +42,7 @@ def _send_email(subject: str, body: str):
     send_email(to=["dosimeyolivia98@gmail.com"], subject=subject, html_content=body)
 
 
-def run_data_generation(num_rows: int = 100) -> str:
+def _run_data_generation(num_rows: int = 100) -> str:
     """
     Generate fake sales data and upload to MinIO.
     Returns the MinIO object name that was created.
@@ -123,7 +123,7 @@ with DAG(
 
     generate_data = PythonOperator(
         task_id="data_generator",
-        python_callable=run_data_generation,
+        python_callable=_run_data_generation,
         op_kwargs={"num_rows": 100},
         retries=2,
     )

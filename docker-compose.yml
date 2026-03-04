@@ -107,7 +107,7 @@ services:
           --firstname Admin \
           --lastname User \
           --role Admin \
-          --email dosimeyolivia98@gmail.com || true
+          --email || true
     restart: "no"
 
   # --- Airflow: webserver ---------------------------------------------------

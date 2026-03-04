@@ -39,7 +39,7 @@ def generate_fake_sales_csv(num_rows: int = 100) -> bytes:
         writer.writerow(
             [
                 fake.uuid4(),
-                datetime.utcnow().isoformat(),
+                datetime.now().isoformat(),
                 fake.name(),
                 fake.email(),
                 fake.phone_number(),

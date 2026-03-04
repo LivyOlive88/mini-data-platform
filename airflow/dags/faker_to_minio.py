@@ -1,6 +1,7 @@
 import csv
 import io
 import logging
+import os
 from datetime import datetime
 
 from faker import Faker
@@ -56,15 +57,20 @@ def generate_fake_sales_csv(num_rows: int = 100) -> bytes:
 def upload_csv_to_minio(
     csv_bytes: bytes,
     bucket_name: str = "bronze",
-    endpoint: str = "mdp_minio:9000",
-    access_key: str = "minioadmin",
-    secret_key: str = "minioadmin123",
+    endpoint: str = None,
+    access_key: str = None,
+    secret_key: str = None,
 ) -> str:
     """
     Upload the CSV bytes to MinIO in the given bucket.
 
     Returns the object name that was created.
     """
+    # Use environment variables or provided parameters
+    endpoint = endpoint or os.getenv("MINIO_ENDPOINT", "mdp_minio:9000")
+    access_key = access_key or os.getenv("MINIO_ROOT_USER", "minioadmin")
+    secret_key = secret_key or os.getenv("MINIO_ROOT_PASSWORD", "minioadmin123")
+    
     client = Minio(
         endpoint=endpoint,
         access_key=access_key,

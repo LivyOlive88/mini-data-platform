@@ -34,7 +34,7 @@ jobs:
       - name: Lint Python files (syntax check)
         run: |
           python -m py_compile airflow/dags/faker_to_minio.py
-          python -m py_compile airflow/dags/data_generator.py
+          python -m py_compile src/data_generator.py
           python -m py_compile airflow/dags/medallion_pipeline_dag.py
           python -m py_compile src/data_processor.py
           python -m py_compile src/data_validation.py

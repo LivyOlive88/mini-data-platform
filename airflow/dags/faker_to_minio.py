@@ -67,7 +67,7 @@ def upload_csv_to_minio(
     Returns the object name that was created.
     """
     # Use environment variables or provided parameters
-    endpoint = endpoint or os.getenv("MINIO_ENDPOINT", "mdp_minio:9000")
+    endpoint = endpoint or os.getenv("MINIO_ENDPOINT", "minio:9000")
     access_key = access_key or os.getenv("MINIO_ROOT_USER", "minioadmin")
     secret_key = secret_key or os.getenv("MINIO_ROOT_PASSWORD", "minioadmin123")
     

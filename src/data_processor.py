@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 POSTGRES_CONN = {
-    "host": os.getenv("POSTGRES_HOST", "mdp_postgres"),
+    "host": os.getenv("POSTGRES_HOST", "postgres"),
     "port": int(os.getenv("POSTGRES_PORT", 5432)),
     "dbname": os.getenv("POSTGRES_DB", "mdp_db"),
     "user": os.getenv("POSTGRES_USER", "mdp_user"),

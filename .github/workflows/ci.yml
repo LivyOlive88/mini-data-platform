@@ -187,19 +187,24 @@ jobs:
           done
 
       - name: Initialize medallion schemas
-        run: docker exec mdp_airflow_scheduler python -c "from src.data_processor import init_medallion_schemas; init_medallion_schemas(); print('Schemas initialized successfully.')"
+        run: |
+          docker exec mdp_airflow_scheduler python -c "from src.data_processor import init_medallion_schemas; init_medallion_schemas(); print('Schemas initialized successfully.')"
 
-      - name: "Data Flow 1/4: Ingest — generate fake data and upload to MinIO"
-        run: docker exec mdp_airflow_scheduler python -c "from src.data_generator import run_data_generation; obj = run_data_generation(num_rows=50); print(f'Uploaded object: {obj}')"
+      - name: "Data Flow 1/4: Ingest - generate fake data and upload to MinIO"
+        run: |
+          docker exec mdp_airflow_scheduler python -c "from src.data_generator import run_data_generation; obj = run_data_generation(num_rows=50); print(f'Uploaded object: {obj}')"
 
-      - name: "Data Flow 2/4: Process — load bronze placeholder"
-        run: docker exec mdp_airflow_scheduler python -c "from src.data_processor import load_bronze_placeholder; load_bronze_placeholder('ci_test_data.csv'); print('Bronze load complete.')"
+      - name: "Data Flow 2/4: Process - load bronze placeholder"
+        run: |
+          docker exec mdp_airflow_scheduler python -c "from src.data_processor import load_bronze_placeholder; load_bronze_placeholder('ci_test_data.csv'); print('Bronze load complete.')"
 
-      - name: "Data Flow 3/4: Transform — bronze → silver → gold"
-        run: docker exec mdp_airflow_scheduler python -c "from src.data_processor import transform_bronze_to_silver, aggregate_silver_to_gold; transform_bronze_to_silver(); print('Silver transform complete.'); aggregate_silver_to_gold(); print('Gold aggregation complete.')"
+      - name: "Data Flow 3/4: Transform - bronze to silver to gold"
+        run: |
+          docker exec mdp_airflow_scheduler python -c "from src.data_processor import transform_bronze_to_silver, aggregate_silver_to_gold; transform_bronze_to_silver(); print('Silver transform complete.'); aggregate_silver_to_gold(); print('Gold aggregation complete.')"
 
-      - name: "Data Flow 4/4: Validate — check row counts"
-        run: docker exec mdp_airflow_scheduler python -c "from src.data_validation import validate_row_counts; ok = validate_row_counts(); exit(0 if ok else 1)" && echo 'Data validation PASSED' || echo 'Data validation FAILED'
+      - name: "Data Flow 4/4: Validate - check row counts"
+        run: |
+          docker exec mdp_airflow_scheduler python -c "from src.data_validation import validate_row_counts; ok = validate_row_counts(); exit(0 if ok else 1)" && echo 'Data validation PASSED' || echo 'Data validation FAILED'
 
       - name: Verify Metabase can reach gold table
         run: |

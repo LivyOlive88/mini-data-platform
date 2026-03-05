@@ -83,7 +83,7 @@ jobs:
 
       - name: Start all services
         run: |
-          docker compose up -d --build --wait
+          docker compose up -d --build
         timeout-minutes: 10
 
       - name: Wait for services to be healthy
@@ -95,22 +95,39 @@ jobs:
             sleep 5
           done
 
-          echo "Waiting for Airflow webserver..."
+          echo "Waiting for Airflow webserver to be healthy..."
+          for i in $(seq 1 60); do
+            docker exec mdp_airflow_webserver curl -sf http://localhost:8080/health && break
+            echo "  attempt $i/60 — waiting 5s..."
+            sleep 5
+          done
+
+          echo "Waiting for Airflow scheduler..."
           for i in $(seq 1 30); do
-            curl -sf http://localhost:8080/health && break
+            docker exec mdp_airflow_scheduler pgrep -f "airflow scheduler" && break
             echo "  attempt $i/30 — waiting 5s..."
             sleep 5
           done
 
           echo "Waiting for MinIO..."
           for i in $(seq 1 20); do
-            curl -sf http://localhost:9000/minio/health/live && break
+            docker exec mdp_minio curl -sf http://localhost:9000/minio/health/live && break
             echo "  attempt $i/20 — waiting 5s..."
             sleep 5
           done
 
       - name: Show running containers
         run: docker compose ps
+
+      - name: Show Airflow logs if webserver failed
+        if: failure()
+        run: |
+          echo "=== Airflow Webserver Logs ==="
+          docker logs mdp_airflow_webserver 2>&1 | tail -100 || true
+          echo "=== Airflow Scheduler Logs ==="
+          docker logs mdp_airflow_scheduler 2>&1 | tail -100 || true
+          echo "=== Airflow Init Logs ==="
+          docker logs mdp_airflow_init 2>&1 || true
 
       - name: Tear down test environment
         if: always()
@@ -150,13 +167,22 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Start all services
-        run: docker compose up -d --build --wait
+        run: docker compose up -d --build
         timeout-minutes: 10
 
-      - name: Wait for PostgreSQL to be ready
+      - name: Wait for services to be ready
         run: |
+          echo "Waiting for PostgreSQL..."
           for i in $(seq 1 30); do
             docker exec mdp_postgres pg_isready -U mdp_user -d mdp_db && break
+            echo "  attempt $i/30 — waiting 5s..."
+            sleep 5
+          done
+
+          echo "Waiting for Airflow scheduler..."
+          for i in $(seq 1 60); do
+            docker exec mdp_airflow_scheduler pgrep -f "airflow scheduler" && break
+            echo "  attempt $i/60 — waiting 5s..."
             sleep 5
           done
 
@@ -221,6 +247,16 @@ jobs:
              UNION ALL
              SELECT 'gold', COUNT(*) FROM gold.sales_agg_daily
              ORDER BY layer;"
+
+      - name: Show container logs if validation failed
+        if: failure()
+        run: |
+          echo "=== Airflow Scheduler Logs ==="
+          docker logs mdp_airflow_scheduler 2>&1 | tail -100 || true
+          echo "=== PostgreSQL Logs ==="
+          docker logs mdp_postgres 2>&1 | tail -50 || true
+          echo "=== MinIO Logs ==="
+          docker logs mdp_minio 2>&1 | tail -50 || true
 
       - name: Tear down
         if: always()

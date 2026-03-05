@@ -132,10 +132,11 @@ services:
         condition: service_completed_successfully
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:8080/health || exit 1" ]
+      test: [ "CMD-SHELL", "curl -f http://localhost:8080/health/ready 2>/dev/null || curl -f http://localhost:8080/health 2>/dev/null || exit 1" ]
       interval: 30s
-      timeout: 10s
-      retries: 5
+      timeout: 20s
+      retries: 10
+      start_period: 60s
 
   # --- Airflow: scheduler ---------------------------------------------------
   airflow-scheduler:
@@ -146,6 +147,11 @@ services:
       airflow-init:
         condition: service_completed_successfully
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pgrep -f 'airflow scheduler' || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 # ---------------------------------------------------------------------------
 # Named volumes

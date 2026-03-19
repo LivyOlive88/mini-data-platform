@@ -27,9 +27,13 @@ jobs:
           python-version: "3.11"
 
       - name: Install Python dependencies
+        # FIX 1: Install only the packages needed for linting here.
+        # Airflow requires a constraints file to resolve correctly; installing
+        # it bare (as before) causes dependency conflicts and breaks the job.
+        # The full Airflow image is tested via Docker in the steps below.
         run: |
           pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install faker minio psycopg2-binary
 
       - name: Lint Python files (syntax check)
         run: |
@@ -42,6 +46,26 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      # FIX 2: Create .env before any docker compose commands.
+      # docker compose config (and build) interpolate variables from .env,
+      # so without this file the config validation step errors out.
+      - name: Create .env file for CI
+        run: |
+          cat > .env << EOF
+          POSTGRES_HOST=postgres
+          POSTGRES_PORT=5432
+          POSTGRES_USER=mdp_user
+          POSTGRES_PASSWORD=mdp_pass
+          POSTGRES_DB=mdp_db
+          MINIO_ENDPOINT=minio:9000
+          MINIO_ROOT_USER=minioadmin
+          MINIO_ROOT_PASSWORD=minioadmin123
+          AIRFLOW_USERNAME=mdp-airflow
+          AIRFLOW_PASSWORD=mdp-pass
+          FERNET_KEY=_cumf5Q0qTfXja1ECPpUMUrPORKW6AN3zSzmdo5qxh4=
+          SMTP_PASSWORD=test_password
+          EOF
 
       - name: Validate Docker Compose configuration
         run: docker compose config --quiet
@@ -190,9 +214,11 @@ jobs:
         run: |
           docker exec airflow_scheduler_mdp python -c "from src.data_processor import init_medallion_schemas; init_medallion_schemas(); print('Schemas initialized successfully.')"
 
+      # FIX 4: The function in src/data_generator.py is named generate_and_upload,
+      # not run_data_generation. Updated the call to match the actual function name.
       - name: "Data Flow 1/4: Ingest - generate fake data and upload to MinIO"
         run: |
-          docker exec airflow_scheduler_mdp python -c "from src.data_generator import run_data_generation; obj = run_data_generation(num_rows=50); print(f'Uploaded object: {obj}')"
+          docker exec airflow_scheduler_mdp python -c "from src.data_generator import generate_and_upload; obj = generate_and_upload(num_rows=50); print(f'Uploaded object: {obj}')"
 
       - name: "Data Flow 2/4: Process - load bronze placeholder"
         run: |

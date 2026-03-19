@@ -90,28 +90,28 @@ jobs:
         run: |
           echo "Waiting for PostgreSQL..."
           for i in $(seq 1 30); do
-            docker exec mdp_postgres pg_isready -U mdp_user -d mdp_db && break
+            docker exec postgres_mdp pg_isready -U mdp_user -d mdp_db && break
             echo "  attempt $i/30 — waiting 5s..."
             sleep 5
           done
 
           echo "Waiting for Airflow webserver to be healthy..."
           for i in $(seq 1 60); do
-            docker exec mdp_airflow_webserver curl -sf http://localhost:8080/health && break
+            docker exec airflow_webserver_mdp curl -sf http://localhost:8080/health && break
             echo "  attempt $i/60 — waiting 5s..."
             sleep 5
           done
 
           echo "Waiting for Airflow scheduler..."
           for i in $(seq 1 30); do
-            docker exec mdp_airflow_scheduler pgrep -f "airflow scheduler" && break
+            docker exec airflow_scheduler_mdp pgrep -f "airflow scheduler" && break
             echo "  attempt $i/30 — waiting 5s..."
             sleep 5
           done
 
           echo "Waiting for MinIO..."
           for i in $(seq 1 20); do
-            docker exec mdp_minio curl -sf http://localhost:9000/minio/health/live && break
+            docker exec minio_mdp curl -sf http://localhost:9000/minio/health/live && break
             echo "  attempt $i/20 — waiting 5s..."
             sleep 5
           done
@@ -123,11 +123,11 @@ jobs:
         if: failure()
         run: |
           echo "=== Airflow Webserver Logs ==="
-          docker logs mdp_airflow_webserver 2>&1 | tail -100 || true
+          docker logs airflow_webserver_mdp 2>&1 | tail -100 || true
           echo "=== Airflow Scheduler Logs ==="
-          docker logs mdp_airflow_scheduler 2>&1 | tail -100 || true
+          docker logs airflow_scheduler_mdp 2>&1 | tail -100 || true
           echo "=== Airflow Init Logs ==="
-          docker logs mdp_airflow_init 2>&1 || true
+          docker logs airflow_init_mdp 2>&1 || true
 
       - name: Tear down test environment
         if: always()
@@ -174,41 +174,41 @@ jobs:
         run: |
           echo "Waiting for PostgreSQL..."
           for i in $(seq 1 30); do
-            docker exec mdp_postgres pg_isready -U mdp_user -d mdp_db && break
+            docker exec postgres_mdp pg_isready -U mdp_user -d mdp_db && break
             echo "  attempt $i/30 — waiting 5s..."
             sleep 5
           done
 
           echo "Waiting for Airflow scheduler..."
           for i in $(seq 1 60); do
-            docker exec mdp_airflow_scheduler pgrep -f "airflow scheduler" && break
+            docker exec airflow_scheduler_mdp pgrep -f "airflow scheduler" && break
             echo "  attempt $i/60 — waiting 5s..."
             sleep 5
           done
 
       - name: Initialize medallion schemas
         run: |
-          docker exec mdp_airflow_scheduler python -c "from src.data_processor import init_medallion_schemas; init_medallion_schemas(); print('Schemas initialized successfully.')"
+          docker exec airflow_scheduler_mdp python -c "from src.data_processor import init_medallion_schemas; init_medallion_schemas(); print('Schemas initialized successfully.')"
 
       - name: "Data Flow 1/4: Ingest - generate fake data and upload to MinIO"
         run: |
-          docker exec mdp_airflow_scheduler python -c "from src.data_generator import run_data_generation; obj = run_data_generation(num_rows=50); print(f'Uploaded object: {obj}')"
+          docker exec airflow_scheduler_mdp python -c "from src.data_generator import run_data_generation; obj = run_data_generation(num_rows=50); print(f'Uploaded object: {obj}')"
 
       - name: "Data Flow 2/4: Process - load bronze placeholder"
         run: |
-          docker exec mdp_airflow_scheduler python -c "from src.data_processor import load_bronze_placeholder; load_bronze_placeholder('ci_test_data.csv'); print('Bronze load complete.')"
+          docker exec airflow_scheduler_mdp python -c "from src.data_processor import load_bronze_placeholder; load_bronze_placeholder('ci_test_data.csv'); print('Bronze load complete.')"
 
       - name: "Data Flow 3/4: Transform - bronze to silver to gold"
         run: |
-          docker exec mdp_airflow_scheduler python -c "from src.data_processor import transform_bronze_to_silver, aggregate_silver_to_gold; transform_bronze_to_silver(); print('Silver transform complete.'); aggregate_silver_to_gold(); print('Gold aggregation complete.')"
+          docker exec airflow_scheduler_mdp python -c "from src.data_processor import transform_bronze_to_silver, aggregate_silver_to_gold; transform_bronze_to_silver(); print('Silver transform complete.'); aggregate_silver_to_gold(); print('Gold aggregation complete.')"
 
       - name: "Data Flow 4/4: Validate - check row counts"
         run: |
-          docker exec mdp_airflow_scheduler python -c "from src.data_validation import validate_row_counts; ok = validate_row_counts(); exit(0 if ok else 1)" && echo 'Data validation PASSED' || echo 'Data validation FAILED'
+          docker exec airflow_scheduler_mdp python -c "from src.data_validation import validate_row_counts; ok = validate_row_counts(); exit(0 if ok else 1)" && echo 'Data validation PASSED' || echo 'Data validation FAILED'
 
       - name: Verify Metabase can reach gold table
         run: |
-          docker exec mdp_postgres psql -U mdp_user -d mdp_db -c \
+          docker exec postgres_mdp psql -U mdp_user -d mdp_db -c \
             "SELECT COUNT(*) AS gold_rows FROM gold.sales_agg_daily;"
 
       - name: Print data flow summary
@@ -216,7 +216,7 @@ jobs:
           echo "========================================"
           echo "  END-TO-END DATA FLOW VALIDATION: OK"
           echo "========================================"
-          docker exec mdp_postgres psql -U mdp_user -d mdp_db -c \
+          docker exec postgres_mdp psql -U mdp_user -d mdp_db -c \
             "SELECT 'bronze' AS layer, COUNT(*) AS rows FROM bronze.sales_raw
              UNION ALL
              SELECT 'silver', COUNT(*) FROM silver.sales_clean
@@ -228,11 +228,11 @@ jobs:
         if: failure()
         run: |
           echo "=== Airflow Scheduler Logs ==="
-          docker logs mdp_airflow_scheduler 2>&1 | tail -100 || true
+          docker logs airflow_scheduler_mdp 2>&1 | tail -100 || true
           echo "=== PostgreSQL Logs ==="
-          docker logs mdp_postgres 2>&1 | tail -50 || true
+          docker logs postgres_mdp 2>&1 | tail -50 || true
           echo "=== MinIO Logs ==="
-          docker logs mdp_minio 2>&1 | tail -50 || true
+          docker logs minio_mdp 2>&1 | tail -50 || true
 
       - name: Tear down
         if: always()

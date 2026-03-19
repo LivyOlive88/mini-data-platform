@@ -9,6 +9,7 @@ Alerts:   email on failure and when no new data is detected
 """
 
 import logging
+import os
 from datetime import datetime, timedelta
 
 from airflow import DAG
@@ -39,7 +40,7 @@ logger = logging.getLogger(__name__)
 def _send_email(subject: str, body: str):
     """Simple wrapper so we can reuse email sending."""
     logger.info("Sending email with subject: %s", subject)
-    send_email(to=["dosimeyolivia98@gmail.com"], subject=subject, html_content=body)
+    send_email(to=[os.getenv("SMTP_MAIL_FROM")], subject=subject, html_content=body)
 
 
 def _run_data_generation(num_rows: int = 100) -> str:
@@ -98,7 +99,7 @@ def validation_task() -> None:
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
-    "email": ["dosimeyolivia98@gmail.com"],
+    "email": [os.getenv("SMTP_MAIL_FROM")],
     "email_on_failure": True,
     "email_on_retry": False,
     "retries": 3,

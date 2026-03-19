@@ -10,7 +10,7 @@ Metabase Setup (Manual Steps)
 3. Initial configuration:
    - Create an admin user (any details you like).
    - When asked for a database, choose **PostgreSQL**:
-     - Host: `mdp_postgres`
+     - Host: `postgres_mdp`
      - Port: `5432`
      - Database name: `mdp_db`
      - Username: `mdp_user`

@@ -20,7 +20,7 @@ _dags_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "airfl
 if _dags_dir not in sys.path:
     sys.path.insert(0, _dags_dir)
 
-from faker_to_minio import generate_and_upload  # noqa: E402
+from airflow.dags.faker_to_minio import generate_and_upload 
 
 
 def run_data_generation(num_rows: int = 100) -> str:

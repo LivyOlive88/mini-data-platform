@@ -14,9 +14,7 @@ logger = logging.getLogger(__name__)
 
 def generate_fake_sales_csv(num_rows: int = 100) -> bytes:
     """
-    Generate a CSV in-memory with fake sales data including PII.
-
-    PII columns: full_name, email, phone, address.
+    Generate a CSV in-memory with fake sales data.
     """
     fake = Faker()
     output = io.StringIO()

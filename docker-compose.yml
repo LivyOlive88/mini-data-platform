@@ -16,9 +16,9 @@ x-airflow-common: &airflow-common
     AIRFLOW__SMTP__SMTP_HOST: smtp.gmail.com
     AIRFLOW__SMTP__SMTP_PORT: 587
     AIRFLOW__SMTP__SMTP_STARTTLS: "True"
-    AIRFLOW__SMTP__SMTP_USER: ${SMTP_MAIL_FROM}
+    AIRFLOW__SMTP__SMTP_USER: dosimeyolivia98@gmail.com
     AIRFLOW__SMTP__SMTP_PASSWORD: ${SMTP_PASSWORD:-YOUR_APP_PASSWORD_HERE}
-    AIRFLOW__SMTP__SMTP_MAIL_FROM: ${SMTP_MAIL_FROM}
+    AIRFLOW__SMTP__SMTP_MAIL_FROM: dosimeyolivia98@gmail.com
     _PIP_ADDITIONAL_REQUIREMENTS: "faker minio psycopg2-binary"
     PYTHONPATH: "/opt/airflow:/opt/airflow/src"
     # PostgreSQL
@@ -31,8 +31,6 @@ x-airflow-common: &airflow-common
     MINIO_ENDPOINT: ${MINIO_ENDPOINT}
     MINIO_ROOT_USER: ${MINIO_ROOT_USER}
     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    # SMTP
-    SMTP_MAIL_FROM: ${SMTP_MAIL_FROM}
   user: "50000:50000"
   depends_on:
     postgres:
@@ -148,7 +146,7 @@ services:
         condition: service_completed_successfully
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD-SHELL", "airflow jobs check --job-type SchedulerJob --hostname $(hostname) 2>/dev/null || exit 1" ]
+      test: [ "CMD-SHELL", "pgrep -f 'airflow scheduler' || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3

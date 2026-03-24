@@ -15,10 +15,17 @@ import os
 
 logger = logging.getLogger(__name__)
 
-# Ensure the dags folder is importable so we can reach faker_to_minio
-_dags_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "airflow", "dags"))
-if _dags_dir not in sys.path:
-    sys.path.insert(0, _dags_dir)
+# Ensure the dags folder is importable so we can reach faker_to_minio.
+# Two candidate paths:
+#   1. Local dev layout:   <project>/airflow/dags  (relative to this file)
+#   2. Docker layout:      /opt/airflow/dags       (Dockerfile copies dags here)
+_candidates = [
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "airflow", "dags")),
+    "/opt/airflow/dags",
+]
+for _dags_dir in _candidates:
+    if _dags_dir not in sys.path and os.path.isdir(_dags_dir):
+        sys.path.insert(0, _dags_dir)
 
 from faker_to_minio import generate_and_upload  # noqa: E402 — imported after sys.path setup
 

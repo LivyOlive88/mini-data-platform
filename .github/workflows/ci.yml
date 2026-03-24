@@ -55,16 +55,16 @@ jobs:
           cat > .env << EOF
           POSTGRES_HOST=postgres
           POSTGRES_PORT=5432
-          POSTGRES_USER=mdp_user
-          POSTGRES_PASSWORD=mdp_pass
-          POSTGRES_DB=mdp_db
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
           MINIO_ENDPOINT=minio:9000
-          MINIO_ROOT_USER=minioadmin
-          MINIO_ROOT_PASSWORD=minioadmin123
-          AIRFLOW_USERNAME=mdp-airflow
-          AIRFLOW_PASSWORD=mdp-pass
-          FERNET_KEY=_cumf5Q0qTfXja1ECPpUMUrPORKW6AN3zSzmdo5qxh4=
-          SMTP_PASSWORD=test_password
+          MINIO_ROOT_USER=${{ secrets.MINIO_ROOT_USER }}
+          MINIO_ROOT_PASSWORD=${{ secrets.MINIO_ROOT_PASSWORD }}
+          AIRFLOW_USERNAME=${{ secrets.AIRFLOW_USERNAME }}
+          AIRFLOW_PASSWORD=${{ secrets.AIRFLOW_PASSWORD }}
+          FERNET_KEY=${{ secrets.FERNET_KEY }}
+          SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
           EOF
 
       - name: Validate Docker Compose configuration
@@ -90,16 +90,16 @@ jobs:
           cat > .env << EOF
           POSTGRES_HOST=postgres
           POSTGRES_PORT=5432
-          POSTGRES_USER=mdp_user
-          POSTGRES_PASSWORD=mdp_pass
-          POSTGRES_DB=mdp_db
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
           MINIO_ENDPOINT=minio:9000
-          MINIO_ROOT_USER=minioadmin
-          MINIO_ROOT_PASSWORD=minioadmin123
-          AIRFLOW_USERNAME=mdp-airflow
-          AIRFLOW_PASSWORD=mdp-pass
-          FERNET_KEY=_cumf5Q0qTfXja1ECPpUMUrPORKW6AN3zSzmdo5qxh4=
-          SMTP_PASSWORD=test_password
+          MINIO_ROOT_USER=${{ secrets.MINIO_ROOT_USER }}
+          MINIO_ROOT_PASSWORD=${{ secrets.MINIO_ROOT_PASSWORD }}
+          AIRFLOW_USERNAME=${{ secrets.AIRFLOW_USERNAME }}
+          AIRFLOW_PASSWORD=${{ secrets.AIRFLOW_PASSWORD }}
+          FERNET_KEY=${{ secrets.FERNET_KEY }}
+          SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
           EOF
 
       - name: Set up Docker Buildx
@@ -175,16 +175,16 @@ jobs:
           cat > .env << EOF
           POSTGRES_HOST=postgres
           POSTGRES_PORT=5432
-          POSTGRES_USER=mdp_user
-          POSTGRES_PASSWORD=mdp_pass
-          POSTGRES_DB=mdp_db
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
           MINIO_ENDPOINT=minio:9000
-          MINIO_ROOT_USER=minioadmin
-          MINIO_ROOT_PASSWORD=minioadmin123
-          AIRFLOW_USERNAME=mdp-airflow
-          AIRFLOW_PASSWORD=mdp-pass
-          FERNET_KEY=_cumf5Q0qTfXja1ECPpUMUrPORKW6AN3zSzmdo5qxh4=
-          SMTP_PASSWORD=test_password
+          MINIO_ROOT_USER=${{ secrets.MINIO_ROOT_USER }}
+          MINIO_ROOT_PASSWORD=${{ secrets.MINIO_ROOT_PASSWORD }}
+          AIRFLOW_USERNAME=${{ secrets.AIRFLOW_USERNAME }}
+          AIRFLOW_PASSWORD=${{ secrets.AIRFLOW_PASSWORD }}
+          FERNET_KEY=${{ secrets.FERNET_KEY }}
+          SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
           EOF
 
       - name: Set up Docker Buildx

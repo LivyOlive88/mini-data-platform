@@ -56,7 +56,7 @@ def _run_data_generation(num_rows: int = 100) -> str:
 
 def detect_new_files(**context) -> bool:
     """
-    Beginner-friendly 'detection': if data_generator produced an object_name,
+    if data_generator produced an object_name,
     we treat that as 'new data detected'. If not, send an email alert and
     short-circuit the rest of the pipeline for this run.
     """

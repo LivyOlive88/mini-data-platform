@@ -6,6 +6,10 @@ USER root
 RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
+# Ensure Airflow log directories exist and are writable by airflow (uid 50000)
+RUN mkdir -p /opt/airflow/logs/scheduler /opt/airflow/logs/dag_processor_manager \
+    && chown -R 50000:0 /opt/airflow/logs
+
 USER airflow
 
 # Copy and install Python requirements
